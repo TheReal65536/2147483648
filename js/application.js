@@ -214,7 +214,7 @@ function changeRule(add, merge, win) {
 }
 
 function normalAdd() {
-  return Math.random() < 0.9 ? 2 : 4;
+  return Math.random() < 0.95 ? 2 : 4;
 }
 
 function normalMerge(a, b) {
@@ -222,13 +222,13 @@ function normalMerge(a, b) {
 }
 
 function normalWin(merged) {
-  return merged === 4096;
+  return merged === 4611686018427388000;
 }
 
 function normal() {
   changeRule(normalAdd, 
     function(a, b) { return a === b; }, 
-    function(merged) { return merged === 2147483648; });
+    function(merged) { return merged === 4611686018427388000; });
 }
 
 function alwaysTwo() {
@@ -240,7 +240,7 @@ function fibonacci() {
   var a = 1, b = 1;
   fib.push(a);
   fib.push(b);
-  while (a + b <= 2147483648) {
+  while (a + b <= 4611686018427388000) {
     var c = a + b;
     fib.push(c);
     a = b;
@@ -255,13 +255,13 @@ function fibonacci() {
       }
       return false;
     }, 
-    function(merged) { return merged === 5702887; });
+    function(merged) { return merged === 17167680177565; });
 }
 
 function threes() {
   changeRule(function() { return Math.random() < 0.7 ? (Math.random() < 0.5 ? 1 : 2) : 3; },
     function(a, b) { return (a === 1 && b === 2) || (a === 2 && b === 1) || (a > 2 && b > 2 && a === b); }, 
-    function(merged) { return merged === 1610612736; });
+    function(merged) { return merged === 708354972430467300000; });
 }
 
 function mergeAny() {
@@ -300,7 +300,7 @@ function tileNegative() {
 function gravity() {
   changeRule(normalAdd, 
     function(a, b) { return a === b; }, 
-    function(merged) { return merged === 2147483648; });
+    function(merged) { return merged === 4611686018427388000; });
   game.gravity = game.move;
   game.move = function(dir) {
     game.gravity(dir);
@@ -341,4 +341,35 @@ function timeRush(sec) {
     }
   }
   countDown();
+}
+
+function saveBoard() {
+  tiles = []
+  for (var i = 0; i < game.grid.cells.length; ++i) {
+    for (var j = 0; j < game.grid.cells[i].length; ++j) {
+      if (game.grid.cells[i][j]) {
+        tiles.push(game.grid.cells[i][j]);
+      }
+    }
+  }
+  window.localStorage.setItem('tiles', JSON.stringify(tiles));
+}
+
+function loadBoard() {
+  var tiles = window.localStorage.getItem('tiles');
+  if (tiles) {
+    tiles = JSON.parse(tiles);
+    for (var i = 0; i < game.grid.cells.length; ++i) {
+      for (var j = 0; j < game.grid.cells[i].length; ++j) {
+        if (game.grid.cells[i][j]) {
+          game.grid.removeTile(game.grid.cells[i][j]);
+        }
+      }
+    }
+    for (var i = 0; i < tiles.length; ++i) {
+      var tile = new Tile({x: tiles[i].x, y: tiles[i].y}, tiles[i].value);
+      game.grid.insertTile(tile);
+    }
+    game.actuate();
+  }
 }
